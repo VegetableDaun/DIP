@@ -1,2 +1,2 @@
 # DIP
-DIP is test some GANS models.
+DIP is test of some GANS models.
