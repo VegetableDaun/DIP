@@ -4,7 +4,7 @@ from keras.utils import to_categorical
 import pandas as pd
 
 
-def Conv(img, label):
+def conv_RGB(img, label):
     img = cv2.imread(str(img))
     img = cv2.resize(img, (224, 224))
 
@@ -17,14 +17,14 @@ def Conv(img, label):
     return img, label
 
 
-def increase(Data, add_labels):
+def increase(data, add_labels):
     add = pd.DataFrame()
     # if Data.iloc[i]['label'] in add_labels:
-    for i in range(len(Data)):
-        for _ in range(add_labels[Data.iloc[i]['label']]):
-            add = pd.concat([add, Data.iloc[[i]]])
+    for i in range(len(data)):
+        for _ in range(add_labels[data.iloc[i]['label']]):
+            add = pd.concat([add, data.iloc[[i]]])
 
     add = add.replace({'add': 0}, 1)
-    Data = pd.concat([Data, add]).reset_index(drop=True)
+    data = pd.concat([data, add]).reset_index(drop=True)
 
-    return Data
+    return data

@@ -1,6 +1,7 @@
 # Class GAN
 import tensorflow as tf
 from tensorflow import keras
+from config_GAN import image_size, num_classes
 
 
 class ConditionalGAN(keras.Model):

@@ -1,5 +1,7 @@
-from tensorflow.keras import layers
-from tensorflow.keras import keras
+from tensorflow import keras
+from keras import layers
+
+from config_GAN import generator_in_channels
 
 # Create the generator.
 input_img = layers.Input(shape=(generator_in_channels), name='NoiseInput')

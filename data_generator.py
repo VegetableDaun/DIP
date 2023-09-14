@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
-import tensorflow.keras as keras
-from helped_functions import increase, Conv
+from tensorflow import keras
+from helped_functions import increase, conv_RGB
 
 
 def data_gen(data, batch_size, aug=None, add_labels=None, gen=None, gen_labels=None, latent_dim=128):
@@ -27,14 +27,14 @@ def data_gen(data, batch_size, aug=None, add_labels=None, gen=None, gen_labels=N
         for idx in next_batch:
             sample = data.iloc[int(idx)]
             if sample['add'] == 0:
-                img, label = Conv(sample['image'], sample['label'])  # generating samples
+                img, label = conv_RGB(sample['image'], sample['label'])  # generating samples
 
                 batch_data[count] = img.astype(np.float32) / 255.
                 batch_labels[count] = label
 
                 count += 1
             else:
-                img, label = Conv(sample['image'], sample['label'])  # generating more samples
+                img, label = conv_RGB(sample['image'], sample['label'])  # generating more samples
 
                 batch_data[count] = aug(image=img)['image'].astype(np.float32) / 255.
                 batch_labels[count] = label
