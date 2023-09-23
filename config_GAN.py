@@ -5,14 +5,14 @@ path_to_data = 'chest-xray-pneumonia/chest_xray'
 path_to_duplicate = 'duplicate.json'
 
 # Path to the saved model
-path_to_discriminator = 'train_models/Discriminator.hdf5'
-path_to_generator = 'train_models/Generator.hdf5'
+path_to_discriminator = 'Models/Discriminator'
+path_to_generator = 'Models/Generator'
 
 # Path to noise
 path_to_noise = 'noise.json'
 
 # Path to save metrics and image during train
-path_to_image = 'train_models'
+path_to_result = 'train_models/cGAN'
 
 # Count for test and valid
 count_test = 1164

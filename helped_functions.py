@@ -1,12 +1,14 @@
 import cv2
 import numpy as np
-from keras.utils import to_categorical
 import pandas as pd
+
+from keras.utils import to_categorical
+from config_GAN import image_size
 
 
 def conv_RGB(img, label):
     img = cv2.imread(str(img))
-    img = cv2.resize(img, (224, 224))
+    img = cv2.resize(img, (image_size, image_size))
 
     if img.shape[2] == 1:
         img = np.dstack([img, img, img])
