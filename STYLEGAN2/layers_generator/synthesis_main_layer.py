@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from STYLEGAN2_1.layers_1.modulated_conv_2d_layer import ModulatedConv2DLayer
+from STYLEGAN2.layers_generator.modulated_conv_2d_layer import ModulatedConv2DLayer
 
 
 class SynthesisMainLayer(tf.keras.layers.Layer):
@@ -42,13 +42,13 @@ class SynthesisMainLayer(tf.keras.layers.Layer):
         x = self.mod_conv2d_layer([x, dlatent_vect])
 
         # randomize noise
-        noise = tf.random.normal([tf.shape(x)[0], 1, x.shape[2], x.shape[3]], dtype=x.dtype)
+        noise = tf.random.normal([tf.shape(x)[0], x.shape[2], x.shape[3], 1], dtype=x.dtype) # ????????????????
 
         # adding noise to layer
         x += tf.math.multiply(noise, tf.cast(self.noise_strength, x.dtype))
 
         # adding bias and lrelu activation
-        x += tf.reshape(self.bias, [-1 if i == 1 else 1 for i in range(x.shape.rank)])
+        x += tf.reshape(self.bias, [-1 if i == (x.shape.rank - 1) else 1 for i in range(x.shape.rank)]) # ????????????????
         x = tf.math.multiply(tf.nn.leaky_relu(x, 0.2), tf.math.sqrt(2.))  # ?????????????
 
         return x

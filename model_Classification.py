@@ -5,15 +5,15 @@ from tensorflow.keras import keras
 input_img = layers.Input(shape=(224,224,3), name='ImageInput')
 
 x = layers.Conv2D(32, (3,3), activation='selu', name='Conv2d_1')(input_img)
-#x = layers.BatchNormalization(name='bn_1')(x)
+#x = layers_generator.BatchNormalization(name='bn_1')(x)
 x = layers.MaxPooling2D((2,2), name='max_pool_1')(x)
 
 x = layers.Conv2D(32, (3,3), activation='selu', name='Conv2d_2')(x)
-#x = layers.BatchNormalization(name='bn_2')(x)
+#x = layers_generator.BatchNormalization(name='bn_2')(x)
 x = layers.MaxPooling2D((2,2), name='max_pool_2')(x)
 
 x = layers.Conv2D(64, (3,3), activation='selu', name='Conv2d_3')(x)
-#x = layers.BatchNormalization(name='bn_3')(x)
+#x = layers_generator.BatchNormalization(name='bn_3')(x)
 x = layers.MaxPooling2D((2,2), name='max_pool_3')(x)
 
 

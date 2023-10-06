@@ -1,19 +1,21 @@
 import tensorflow as tf
 import numpy as np
 
-from utils.weights_map import available_weights, weights_stylegan2_dir, discriminator_weights
-from utils.utils_stylegan2 import nf
-from layers.mini_batch_std_layer import MinibatchStdLayer
-from layers.from_rgb_layer import FromRgbLayer
-from layers.block_layer import BlockLayer
-from layers.conv_2d_layer import Conv2DLayer
-from layers.dense_layer import DenseLayer
+from STYLEGAN2.weights_map import available_weights, weights_stylegan2_dir, discriminator_weights
+from STYLEGAN2.utils_stylegan2 import nf
+from STYLEGAN2.layers_discriminator.mini_batch_std_layer import MinibatchStdLayer
+from STYLEGAN2.layers_discriminator.from_rgb_layer import FromRgbLayer
+from STYLEGAN2.layers_discriminator.block_layer import BlockLayer
+from STYLEGAN2.layers_discriminator.conv_2d_layer import Conv2DLayer
+from STYLEGAN2.layers_discriminator.dense_layer import DenseLayer
+
 
 class StyleGan2Discriminator(tf.keras.layers.Layer):
     """
     StyleGan2 discriminator config f for tensorflow 2.x
     """
-    def __init__(self, resolution=1024, weights=None, impl='cuda', gpu=True, **kwargs):
+
+    def __init__(self, resolution=1024, weights=None, **kwargs):
         """
         Parameters
         ----------
@@ -23,17 +25,8 @@ class StyleGan2Discriminator(tf.keras.layers.Layer):
             The default is 1024.
         weights : string, optional
             weights name in weights dir to be loaded. The default is None.
-        impl : str, optional
-            Wether to run some convolutions in custom tensorflow
-            operations or cuda operations. 'ref' and 'cuda' available.
-            The default is 'cuda'.
-        gpu : boolean, optional
-            Wether to use gpu. The default is True.
         """
         super(StyleGan2Discriminator, self).__init__(**kwargs)
-
-        self.gpu = gpu
-        self.impl = impl
 
         self.resolution = resolution
         if weights is not None: self.__adjust_resolution(weights)
@@ -47,21 +40,18 @@ class StyleGan2Discriminator(tf.keras.layers.Layer):
     def build(self, input_shape):
 
         self.mini_btch_std_layer = MinibatchStdLayer()
-        self.from_rgb = FromRgbLayer(fmaps=nf(self.resolution_log2-1),
-                                     name='{}x{}'.format(self.resolution, self.resolution),
-                                     impl=self.impl, gpu=self.gpu)
+        self.from_rgb = FromRgbLayer(fmaps=nf(self.resolution_log2 - 1),
+                                     name='{}x{}'.format(self.resolution, self.resolution))
 
         for res in range(self.resolution_log2, 2, -1):
-            res_str = str(2**res)
+            res_str = str(2 ** res)
             setattr(self, 'block_{}_{}'.format(res_str, res_str),
-                    BlockLayer(res=res, name='{}x{}'.format(res_str, res_str),
-                               impl=self.impl, gpu=self.gpu))
+                    BlockLayer(res=res, name='{}x{}'.format(res_str, res_str)))
 
-        #last layers
-        self.conv_4_4 = Conv2DLayer(fmaps=nf(1), kernel=3, impl=self.impl,
-                                    gpu=self.gpu, name='4x4/Conv')
+        # last layers
+        self.conv_4_4 = Conv2DLayer(fmaps=nf(1), kernel=3, name='4x4/Conv')
         self.conv_4_4_bias = self.add_weight(name='4x4/Conv/bias', shape=(512,),
-                                             initializer=tf.random_normal_initializer(0,1), trainable=True)
+                                             initializer=tf.random_normal_initializer(0, 1), trainable=True)
         self.dense_4_4 = DenseLayer(fmaps=512, name='4x4/Dense0')
         self.dense_output = DenseLayer(fmaps=1, name='Output')
 
@@ -81,14 +71,14 @@ class StyleGan2Discriminator(tf.keras.layers.Layer):
         x = None
 
         for res in range(self.resolution_log2, 2, -1):
-            if  res == self.resolution_log2:
+            if res == self.resolution_log2:
                 x = self.from_rgb(x, y)
-            x = getattr(self, 'block_{}_{}'.format(2**res, 2**res))(x)
+            x = getattr(self, 'block_{}_{}'.format(2 ** res, 2 ** res))(x)
 
-        #minibatch std dev
+        # minibatch std dev
         x = self.mini_btch_std_layer(x)
 
-        #last convolution layer
+        # last convolution layer
         x = self.conv_4_4(x)
         x += tf.reshape(self.conv_4_4_bias, [-1 if i == 1 else 1 for i in range(x.shape.rank)])
         x = tf.math.multiply(tf.nn.leaky_relu(x, 0.2), tf.math.sqrt(2.))
@@ -97,7 +87,7 @@ class StyleGan2Discriminator(tf.keras.layers.Layer):
         # dense layer
         x = self.dense_4_4(x)
         x = tf.math.multiply(tf.nn.leaky_relu(x, 0.2), tf.math.sqrt(2.))
-        #output layer
+        # output layer
         x = self.dense_output(x)
 
         return tf.identity(x, name='scores_out')
@@ -111,7 +101,7 @@ class StyleGan2Discriminator(tf.keras.layers.Layer):
         weights_name : name of the weights
 
         """
-        if  weights_name == 'ffhq':
+        if weights_name == 'ffhq':
             self.resolution = 1024
         elif weights_name == 'car':
             self.resolution = 512

@@ -1,23 +1,18 @@
 import tensorflow as tf
 
-from conv_2d_layer import Conv2DLayer
+from STYLEGAN2.layers_discriminator.conv_2d_layer import Conv2DLayer
 
 class FromRgbLayer(tf.keras.layers.Layer):
     """
     StyleGan2 discriminator From RGB layer
     """
-    def __init__(self, fmaps, impl='cuda', gpu=True, **kwargs):
+    def __init__(self, fmaps, **kwargs):
         
         super(FromRgbLayer, self).__init__(**kwargs)
-        
         self.fmaps = fmaps
-        self.impl = impl
-        self.gpu = gpu
         
     def build(self, input_shape):
-        
-        self.conv2d_rgb = Conv2DLayer(fmaps=self.fmaps, kernel=1, impl=self.impl, gpu=self.gpu, name='FromRGB')
-        
+        self.conv2d_rgb = Conv2DLayer(fmaps=self.fmaps, kernel=1, name='FromRGB')
         self.rgb_bias = self.add_weight(name='FromRGB/bias', shape=(self.fmaps,), 
                                         initializer=tf.random_normal_initializer(0,1), trainable=True)
         
