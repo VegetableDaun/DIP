@@ -38,7 +38,7 @@ class FID:
                 # i = np.repeat(i, 3, axis=-1)
 
                 # resize the input shape , i.e. old shape: 32, new shape: 112
-                i = tf.image.resize(i, [256, 256])  # if we want to resize
+                i = tf.image.resize(i, [128, 128])  # if we want to resize
 
                 # round values
                 i = tf.round(i)
@@ -66,6 +66,7 @@ class FID:
 
             # Generating the images
             generated_img = self.generator(latent_vectors, c=vector_labels)
+            generated_img = tf.transpose(generated_img, [0, 2, 3, 1])
 
             # Preparing generated_img for inceptionV3
             # We need to have values between 1 and 255
@@ -75,7 +76,7 @@ class FID:
             # generated_img = np.repeat(generated_img, 3, axis=-1)
 
             # resize the input shape , i.e. old shape: 32, new shape: 112
-            generated_img = tf.image.resize(generated_img, [256, 256])  # if we want to resize
+            generated_img = tf.image.resize(generated_img, [128, 128])  # if we want to resize
 
             # round values
             generated_img = tf.round(generated_img)
