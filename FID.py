@@ -85,7 +85,7 @@ class FID:
             generated_img = tf.keras.applications.inception_v3.preprocess_input(generated_img)
 
             # inceptionV3 predicts
-            predicted_img = self.inception_model.predict(generated_img, verbose=1)
+            predicted_img = self.inception_model.predict(generated_img, verbose=0)
             generated_embeddings = np.vstack((generated_embeddings, predicted_img))
 
             if self.step_gen is None:
