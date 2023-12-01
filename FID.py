@@ -1,4 +1,3 @@
-import json
 import os
 from pathlib import Path
 
@@ -23,10 +22,10 @@ class FID:
         self.step_gen = step_gen
 
         if os.path.isfile(self.path_to_result):
-            with open(self.path_to_result, 'r') as F:
-                real_mu_sigma = list(json.load(F))
-            self.real_mu = np.array(real_mu_sigma[0])
-            self.real_sigma = np.array(real_mu_sigma[1])
+            data = np.load(self.path_to_result, allow_pickle=True)[()]
+
+            self.real_mu = data['real_mu']
+            self.real_sigma = data['real_sigma']
 
         elif self.data is not None:
             real_embeddings = np.zeros([1, 2048])
@@ -49,8 +48,10 @@ class FID:
                 real_embeddings = np.vstack((real_embeddings, predicted_img))
 
             self.real_mu, self.real_sigma = real_embeddings.mean(axis=0), np.cov(real_embeddings, rowvar=False)
-            with open(self.path_to_result, 'w') as F:
-                json.dump([self.real_mu.tolist(), self.real_sigma.tolist()], F)
+
+            data = {'real_mu': self.real_mu, 'real_sigma': self.real_sigma}
+            np.save(self.path_to_result, data, allow_pickle=True)
+
         else:
             raise Exception
 
