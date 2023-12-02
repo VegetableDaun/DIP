@@ -3,8 +3,9 @@ import tensorflow as tf
 from tensorflow import keras
 from helped_functions import increase, conv_RGB
 
+from config_GAN import latent_dim, image_size, num_classes
 
-def data_gen(data, batch_size, aug=None, add_labels=None, gen=None, gen_labels=None, latent_dim=128):
+def data_gen(data, batch_size, aug=None, add_labels=None, gen=None, gen_labels=None, latent_dim=latent_dim):
     if aug is not None and add_labels != {0: 0, 1: 0, 2: 0}:
         data = increase(data, add_labels)
 
@@ -15,8 +16,8 @@ def data_gen(data, batch_size, aug=None, add_labels=None, gen=None, gen_labels=N
     steps = n // batch_size  # Get numbers of steps
 
     # Define two numpy arrays for containing batch data and labels
-    batch_data = np.zeros((batch_size, 224, 224, 3), dtype=np.float32)
-    batch_labels = np.zeros((batch_size, 3), dtype=np.float32)
+    batch_data = np.zeros((batch_size, image_size, image_size, 3), dtype=np.float32)
+    batch_labels = np.zeros((batch_size, num_classes), dtype=np.float32)
 
     i = 0  # Initialize a counter
     np.random.shuffle(indices)  # Random indices
@@ -48,7 +49,7 @@ def data_gen(data, batch_size, aug=None, add_labels=None, gen=None, gen_labels=N
             else:
                 interpolation_noise = tf.random.normal(shape=(sum(gen_labels.values()), latent_dim))
                 gen_batch_labels = np.repeat(list(gen_labels.keys()), list(gen_labels.values()))
-                gen_batch_labels = keras.utils.to_categorical(gen_batch_labels, num_classes=3)
+                gen_batch_labels = keras.utils.to_categorical(gen_batch_labels, num_classes=num_classes)
 
             interpolation_noise_labels = tf.concat([interpolation_noise, gen_batch_labels], axis=1)
             gen_images = gen.predict(interpolation_noise_labels)
