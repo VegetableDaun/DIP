@@ -5,7 +5,7 @@ from helped_functions import increase, conv_RGB
 
 from config_GAN import latent_dim, image_size, num_classes
 
-def data_gen(data, batch_size, aug=None, add_labels=None, gen=None, gen_labels=None, latent_dim=latent_dim):
+def data_gen(data, batch_size, aug=None, add_labels=None, gen=None, gen_labels=None, latent_dim=latent_dim, shufle=False):
     if aug is not None and add_labels != {0: 0, 1: 0, 2: 0}:
         data = increase(data, add_labels)
 
@@ -62,4 +62,5 @@ def data_gen(data, batch_size, aug=None, add_labels=None, gen=None, gen_labels=N
         i += 1
         if i == steps:
             i = 0
-            np.random.shuffle(indices)
+            if shufle:
+                np.random.shuffle(indices)
