@@ -69,13 +69,14 @@ class FID:
         self.generator.load(path_to_generator)
 
         generated_embeddings = np.zeros([1, 2048])
+
+        n = 1
+        j = 0
+
+        if len(self.data) < self.step_gen:
+            n = math.ceil(len(self.data) / self.step_gen + 1)
+
         for i in self.data:
-            n = 1
-            j = 0
-
-            if len(self.data) < self.step_gen:
-                n = math.ceil(len(self.data) / self.step_gen + 1)
-
             # Create noise vector with label
             latent_vectors = tf.random.normal(shape=(n * batch_size, latent_dim))
             vector_labels = tf.repeat(i[1], n, axis=0)
@@ -109,9 +110,10 @@ class FID:
             # elif generated_embeddings.shape[0] > self.step_gen:
             #     break
 
+            j += tf.shape(i)[0] / n
+            
             if j >= self.len:
                 break
-            j += tf.shape(i)[0] / n
 
         # calculate mean and covariance statistics
         self.gen_mu, self.gen_sigma = generated_embeddings.mean(axis=0), np.cov(generated_embeddings, rowvar=False)
