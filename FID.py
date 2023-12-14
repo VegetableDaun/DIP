@@ -53,6 +53,7 @@ class FID:
                 real_embeddings = np.vstack((real_embeddings, predicted_img))
 
                 j += tf.shape(i)[0]
+                print(j)
 
                 if j >= self.len:
                     break
