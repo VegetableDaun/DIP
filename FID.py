@@ -9,10 +9,11 @@ from scipy import linalg
 
 
 class FID:
-    def __init__(self, generator=None, data=None, step_gen=None):
+    def __init__(self, generator=None, data=None, step_gen=None, len=None):
         self.gen_mu = None
         self.gen_sigma = None
         self.generator = generator
+        self.len = len
 
         self.inception_model = tf.keras.applications.InceptionV3(include_top=False,
                                                                  weights="imagenet",
@@ -29,6 +30,8 @@ class FID:
             self.real_sigma = data['real_sigma']
 
         elif self.data is not None:
+            j = 0
+
             real_embeddings = np.zeros([1, 2048])
             for i in self.data:
                 # we need to have values between 1 and 255
@@ -39,7 +42,7 @@ class FID:
                     i = tf.repeat(i, 3, axis=-1)
 
                 # resize the input shape , i.e. old shape: 32, new shape: 256
-                i = tf.image.resize(i, [128, 128])  # if we want to resize
+                i = tf.image.resize(i, [256, 256])  # if we want to resize
 
                 # round values
                 i = tf.round(i)
@@ -48,6 +51,10 @@ class FID:
                 i = tf.keras.applications.inception_v3.preprocess_input(i)
                 predicted_img = self.inception_model.predict(i, verbose=0)
                 real_embeddings = np.vstack((real_embeddings, predicted_img))
+
+                if j >= self.len:
+                    break
+                j += tf.shape(i)[0]
 
             self.real_mu, self.real_sigma = real_embeddings.mean(axis=0), np.cov(real_embeddings, rowvar=False)
 
@@ -64,6 +71,7 @@ class FID:
         generated_embeddings = np.zeros([1, 2048])
         for i in self.data:
             n = 1
+            j = 0
 
             if len(self.data) < self.step_gen:
                 n = math.ceil(len(self.data) / self.step_gen + 1)
@@ -84,7 +92,7 @@ class FID:
             # generated_img = np.repeat(generated_img, 3, axis=-1)
 
             # resize the input shape , i.e. old shape: 256, new shape: 256
-            generated_img = tf.image.resize(generated_img, [128, 128])  # if we want to resize
+            generated_img = tf.image.resize(generated_img, [256, 256])  # if we want to resize
 
             # round values
             generated_img = tf.round(generated_img)
@@ -100,6 +108,10 @@ class FID:
             #     continue
             # elif generated_embeddings.shape[0] > self.step_gen:
             #     break
+
+            if j >= self.len:
+                break
+            j += tf.shape(i)[0] / n
 
         # calculate mean and covariance statistics
         self.gen_mu, self.gen_sigma = generated_embeddings.mean(axis=0), np.cov(generated_embeddings, rowvar=False)
