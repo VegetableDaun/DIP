@@ -52,9 +52,10 @@ class FID:
                 predicted_img = self.inception_model.predict(i, verbose=0)
                 real_embeddings = np.vstack((real_embeddings, predicted_img))
 
+                j += tf.shape(i)[0]
+
                 if j >= self.len:
                     break
-                j += tf.shape(i)[0]
 
             self.real_mu, self.real_sigma = real_embeddings.mean(axis=0), np.cov(real_embeddings, rowvar=False)
 
@@ -110,8 +111,8 @@ class FID:
             # elif generated_embeddings.shape[0] > self.step_gen:
             #     break
 
-            j += tf.shape(i)[0] / n
-            
+            j += tf.shape(i[0])[0]
+
             if j >= self.len:
                 break
 
