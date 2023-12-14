@@ -1,3 +1,4 @@
+import math
 import os
 from pathlib import Path
 
@@ -34,10 +35,11 @@ class FID:
                 i = i[0] * 255
 
                 # [optional]: we may need 3 channel (instead of 1)
-                # i = np.repeat(i, 3, axis=-1)
+                if tf.shape(i)[2] == 1:
+                    i = tf.repeat(i, 3, axis=-1)
 
-                # resize the input shape , i.e. old shape: 32, new shape: 112
-                i = tf.image.resize(i, [128, 128])  # if we want to resize
+                # resize the input shape , i.e. old shape: 32, new shape: 256
+                i = tf.image.resize(i, [256, 256])  # if we want to resize
 
                 # round values
                 i = tf.round(i)
@@ -61,9 +63,14 @@ class FID:
 
         generated_embeddings = np.zeros([1, 2048])
         for i in self.data:
+            n = 1
+
+            if len(self.data) < self.step_gen:
+                n = math.ceil(len(self.data) / self.step_gen + 1)
+
             # Create noise vector with label
-            latent_vectors = tf.random.normal(shape=(batch_size, latent_dim))
-            vector_labels = i[1]
+            latent_vectors = tf.random.normal(shape=(n * batch_size, latent_dim))
+            vector_labels = tf.repeat(i[1], n, axis=0)
 
             # Generating the images
             generated_img = self.generator(latent_vectors, c=vector_labels)
@@ -76,8 +83,8 @@ class FID:
             # [optional]: we may need 3 channel (instead of 1)
             # generated_img = np.repeat(generated_img, 3, axis=-1)
 
-            # resize the input shape , i.e. old shape: 32, new shape: 112
-            generated_img = tf.image.resize(generated_img, [128, 128])  # if we want to resize
+            # resize the input shape , i.e. old shape: 256, new shape: 256
+            generated_img = tf.image.resize(generated_img, [256, 256])  # if we want to resize
 
             # round values
             generated_img = tf.round(generated_img)
@@ -89,10 +96,10 @@ class FID:
             predicted_img = self.inception_model.predict(generated_img, verbose=0)
             generated_embeddings = np.vstack((generated_embeddings, predicted_img))
 
-            if self.step_gen is None:
-                continue
-            elif generated_embeddings.shape[0] > self.step_gen:
-                break
+            # if self.step_gen is None:
+            #     continue
+            # elif generated_embeddings.shape[0] > self.step_gen:
+            #     break
 
         # calculate mean and covariance statistics
         self.gen_mu, self.gen_sigma = generated_embeddings.mean(axis=0), np.cov(generated_embeddings, rowvar=False)
